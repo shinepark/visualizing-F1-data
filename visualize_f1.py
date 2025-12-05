@@ -13,7 +13,7 @@ colormap = mpl.cm.plasma
 session = ff1.get_session(year, wknd, ses)
 session.load()
 weekend = session.event
-
+ 
 lap = session.laps.pick_drivers(driver).pick_fastest()
 
 # Position data
