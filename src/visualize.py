@@ -100,6 +100,59 @@ def plot_delta_time(delta_df, label_a, label_b, title="Lap Time Delta", save_pat
         fig.savefig(save_path, dpi=150, bbox_inches="tight")
     return fig
 
+def plot_strategy_distributions(sims_df, summary_df, title="Strategy Comparison — Total Race Time",
+                                 save_path=None):
+    """
+    plot of the total-race-time distribution per strategy ordered fastest-median first,
+    annotated with each strategy's Monte Carlo win probability.
+    """
+    order = summary_df["Strategy"].tolist()
+    data = [sims_df.loc[sims_df.Strategy == name, "TotalTime"].values for name in order]
+
+    fig, ax = plt.subplots(figsize=(max(8, 1.6 * len(order)), 6))
+    parts = ax.violinplot(data, showmedians=True)
+    for body in parts["bodies"]:
+        body.set_facecolor("#00D2BE")
+        body.set_alpha(0.5)
+        body.set_edgecolor("black")
+
+    ax.set_xticks(range(1, len(order) + 1))
+    ax.set_xticklabels(order, rotation=15, ha="right")
+    ax.set_ylabel("Total Race Time (s)")
+    ax.set_title(title)
+
+    win_probs = summary_df.set_index("Strategy").loc[order, "WinProbability"]
+    ymax = max(d.max() for d in data)
+    ymin = min(d.min() for d in data)
+    pad = (ymax - ymin) * 0.06
+    for i, name in enumerate(order, start=1):
+        ax.text(i, ymax + pad, f"win: {win_probs[name]:.0%}",
+                ha="center", va="bottom", fontsize=9, fontweight="bold")
+
+    ax.set_ylim(ymin - pad, ymax + pad * 3)
+    fig.tight_layout()
+    if save_path:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    return fig
+
+
+def plot_win_probability(summary_df, title="Monte Carlo Win Probability by Strategy", save_path=None):
+    """bar chart of each strategy's fraction of fastest-finishes."""
+    df = summary_df.sort_values("WinProbability", ascending=False)
+    fig, ax = plt.subplots(figsize=(max(6, 1.4 * len(df)), 4.5))
+    bars = ax.bar(df["Strategy"], df["WinProbability"], color="#00D2BE", edgecolor="black")
+    for bar, val in zip(bars, df["WinProbability"]):
+        ax.text(bar.get_x() + bar.get_width() / 2, val, f"{val:.0%}",
+                ha="center", va="bottom", fontsize=9)
+    ax.set_ylabel("Win probability")
+    ax.set_ylim(0, max(df["WinProbability"].max() * 1.25, 0.1))
+    ax.set_title(title)
+    plt.setp(ax.get_xticklabels(), rotation=15, ha="right")
+    fig.tight_layout()
+    if save_path:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    return fig
+
 def plot_lap_time_evolution(laps_df, drivers, title="Race Pace Evolution", save_path=None):
     fig, ax = plt.subplots(figsize=(11, 5))
     for driver in drivers:

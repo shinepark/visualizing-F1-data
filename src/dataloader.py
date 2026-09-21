@@ -9,7 +9,7 @@ Usage:
     from dataloader import loadsession, getdriverlaps
 
     session = loadsession(2023, "Bahrain", "R")
-    ham_laps =getdriverlaps(session, "HAM")
+    ham_laps = getdriverlaps(session, "HAM")
 """
 
 from pathlib import Path
